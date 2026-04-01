@@ -1,0 +1,21 @@
+<div class="card" style="max-width: 600px;">
+    <h2>🏆 Leaderboard</h2>
+    <table id="lb-table" style="width:100%; text-align:left;">
+        <tr><th>Team</th><th>Score</th><th>Badges</th></tr>
+    </table>
+</div>
+<script>
+    async function updateLB() {
+        const res = await fetch('/api/game/leaderboard');
+        const teams = await res.json();
+        const table = document.getElementById('lb-table');
+        table.innerHTML = '<tr><th>Team</th><th>Score</th><th>Badges</th></tr>';
+        teams.forEach(t => {
+            let badges = t.hintsUsed === 0 ? '🚫💡' : '';
+            if (t.endTime) badges += ' ✅';
+            table.innerHTML += `<tr><td>${t.name}</td><td>${t.score}</td><td>${badges}</td></tr>`;
+        });
+    }
+    setInterval(updateLB, 5000);
+    updateLB();
+</script>

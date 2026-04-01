@@ -1,0 +1,47 @@
+<div class="card">
+    <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+    <h2 id="stage-title">Question</h2>
+    <p id="question-text">Loading...</p>
+    <input type="text" id="answer-input" placeholder="Your answer...">
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="getHint()" style="background:#475569; margin-top: 10px;">Get Hint (-50 pts)</button>
+    <p id="hint-display" class="hint-text"></p>
+    <p>Score: <span id="score">0</span></p>
+</div>
+
+<script>
+    async function loadGame() {
+        const res = await fetch('/api/game/status');
+        const data = await res.json();
+        if (data.finished) {
+            window.location.href = '/leaderboard.html';
+            return;
+        }
+        document.getElementById('question-text').innerText = data.question;
+        document.getElementById('score').innerText = data.score;
+        document.getElementById('progress').style.width = (data.stage / data.total * 100) + '%';
+    }
+
+    async function checkAnswer() {
+        const answer = document.getElementById('answer-input').value;
+        const res = await fetch('/api/game/answer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ answer })
+        });
+        const result = await res.json();
+        if (result.correct) {
+            document.getElementById('answer-input').value = '';
+            document.getElementById('hint-display').innerText = '';
+            loadGame();
+        } else alert("Wrong answer! Try again.");
+    }
+
+    async function getHint() {
+        const res = await fetch('/api/game/hint');
+        const data = await res.json();
+        document.getElementById('hint-display').innerText = "Hint: " + data.hint;
+        loadGame();
+    }
+    loadGame();
+</script>
